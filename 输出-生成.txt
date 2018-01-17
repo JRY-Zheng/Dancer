@@ -1,0 +1,9 @@
+﻿1>开始部署 Android_Accelerated_x86_Nougat ...
+1>正在启动仿真器 Android_Accelerated_x86_Nougat ...
+1>正在检查 HAXM 兼容性。
+1>正在安装 HAXM...
+1>找不到 HAXM 安装程序: C:\Program Files (x86)\Android\android-sdk\extras\intel\Hardware_Accelerated_Execution_Manager\silent_install.bat
+1>无法启动仿真器 Android_Accelerated_x86_Nougat。
+1>已取消进程
+1>已取消进程
+已取消生成。

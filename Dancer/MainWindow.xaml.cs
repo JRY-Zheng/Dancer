@@ -98,7 +98,16 @@ namespace Dancer
 
         private void btnMenu_Click(object sender, RoutedEventArgs e)
         {
-
+            /*for (int i = 0; i < 20; i++) for (int j = 0; j < 20; j++)
+                    MysqlConnector.addNewSong("song" + i.ToString(), "singer" + j.ToString(), "listname");
+            */
+            string music_name = "", singer = "";
+            for(int i = 0; i < 20; i++)
+            {
+                MysqlConnector.getCurrentSong(ref music_name, ref singer);
+                MysqlConnector.addListeningRecord(music_name, singer);
+                System.Windows.MessageBox.Show(music_name + " - " + singer);
+            }
         }
         private void changeProcess(double k)
         {

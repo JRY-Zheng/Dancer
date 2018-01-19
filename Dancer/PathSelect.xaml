@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="Dancer.PathSelect"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Dancer"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="400">
+    <Grid>
+        <Border BorderBrush="Gray" CornerRadius="5" >
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FFE2E9EF" Offset="0"/>
+                    <GradientStop Color="#FFC2C9CD" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+        <WrapPanel>
+            <TextBox x:Name="input_path" Text="E:\音乐\歌单\" Margin="12" Width="340" HorizontalAlignment="Left" BorderBrush="Gray" Height="36" KeyDown="TextBox_KeyDown" TextChanged="input_path_TextChanged" VerticalContentAlignment="Center" FontSize="16">
+                <TextBox.Template>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" CornerRadius="8,8,8,8" x:Name="PART_Background" Margin="0,0,0,0" Height="36">
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                                    <GradientStop Color="#FFF9F9F9" Offset="0.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Stretch" Background="{x:Null}" BorderThickness="0" IsTabStop="False" />
+                        </Border>
+                    </ControlTemplate>
+                </TextBox.Template>
+            </TextBox>
+            <Ellipse x:Name="lamp" Height="18" Stroke="#FF48D248" Width="18">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop x:Name="lamp_edge" Color="#FFA7D2A7" Offset="1"/>
+                        <GradientStop x:Name="lamp_center" Color="#FF00D200"/>
+                        <GradientStop x:Name="lamp_middle" Color="#FF57D257" Offset="0.45"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+        </WrapPanel>
+    </Grid>
+</UserControl>

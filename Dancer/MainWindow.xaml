@@ -1,9 +1,9 @@
 ﻿<Window x:Class="Dancer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="90" Width="400" WindowStyle="None" ResizeMode="NoResize" MouseDown="Window_MouseDown" Background="{x:Null}" AllowsTransparency="True">
+        Title="MainWindow" Width="400" WindowStyle="None" MouseDown="Window_MouseDown" Background="{x:Null}" AllowsTransparency="True" Height="90">
     <Grid x:Name="grid">
-        <Border BorderThickness="1" BorderBrush="Gray"  CornerRadius="5, 5, 5, 5"  >
+        <Border x:Name="pink_border" BorderThickness="1" BorderBrush="Gray"  CornerRadius="5, 5, 5, 5" MaxHeight="90" VerticalAlignment="Top">
             <Border.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FFE41E6C" Offset="0"/>
@@ -36,7 +36,7 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button x:Name="btnMin" Content="━" HorizontalAlignment="Left" Margin="16,54,0,0" VerticalAlignment="Top" Width="19" Height="19" Click="btnMin_Click" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" Cursor="Wait">
+        <Button x:Name="btnMin" Content="━" HorizontalAlignment="Left" Margin="16,54,0,0" VerticalAlignment="Top" Width="19" Height="19" Click="btnMin_Click" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White" Cursor="Hand">
 
             <Button.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -61,7 +61,7 @@
             </Button.Template>
         </Button>
 
-        <Button x:Name="btnPlay" Content="∥" Click="btnPlay_Click" Margin="175,5,176,35.6" FontSize="24" BorderBrush="{x:Null}" Foreground="#FFFF0884" Cursor="Hand">
+        <Button x:Name="btnPlay" Content="∥" Click="btnPlay_Click"  FontSize="24" BorderBrush="{x:Null}" Foreground="#FFFF0884" Cursor="Hand" Width="49" Height="49" VerticalAlignment="Top">
 
             <Button.Template>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -136,7 +136,7 @@
                     </LinearGradientBrush>
                 </Rectangle.Fill>
             </Rectangle>
-            <Rectangle x:Name="curProcess" Height="5" Canvas.Top="3" Width="100" RadiusX="1" RadiusY="1">
+            <Rectangle x:Name="curProcess" Height="5" Canvas.Top="3" Width="0" RadiusX="1" RadiusY="1">
                 <Rectangle.Fill>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="#FFB1B1B1" Offset="0"/>
@@ -148,6 +148,9 @@
                 </Rectangle.Fill>
             </Rectangle>
         </Canvas>
-
+        <Border x:Name="sub_menu" Margin="0,90,0,0">
+            <StackPanel x:Name="basePanel" Visibility="Hidden" Margin="0,0,0,0" >
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

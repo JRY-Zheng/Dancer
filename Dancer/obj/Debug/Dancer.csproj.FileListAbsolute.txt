@@ -14,3 +14,6 @@ E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\Dancer.pdb
 E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\Dancer.csproj.CoreCompileInputs.cache
 E:\大学\飞行器设计\C#\Dancer\Dancer\bin\Debug\MySql.Data.dll
 E:\大学\飞行器设计\C#\Dancer\Dancer\bin\Debug\MySql.Data.xml
+E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\PathSelect.g.cs
+E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\Dancer_MarkupCompile.lref
+E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\PathSelect.baml

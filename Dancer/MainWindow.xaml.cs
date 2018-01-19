@@ -26,6 +26,7 @@ namespace Dancer
     public partial class MainWindow : Window
     {
         private DispatcherTimer processTimer = new DispatcherTimer();
+        private PathSelect pathSelect;
         private struct Music
         {
             public 
@@ -38,7 +39,18 @@ namespace Dancer
         {
             InitializeComponent();
             MysqlConnector.init();
-            DirectoryInfo TheFolder = new DirectoryInfo(@"E:\音乐\歌单\");
+            load_music();
+            processTimer.Interval = new TimeSpan(1);
+            processTimer.Tick += ProcessTimer_Tick;
+            player.MediaEnded += Player_MediaEnded;
+            playNewSong();
+            pathSelect = new PathSelect(this);
+            basePanel.Children.Add(pathSelect);
+        }
+        public void load_music(string music_path = @"E:\音乐\歌单\")
+        {
+            musicPath.Clear();
+            DirectoryInfo TheFolder = new DirectoryInfo(music_path);
             DirectoryInfo[] dirInfo = TheFolder.GetDirectories();
             foreach (DirectoryInfo NextFolder in dirInfo)
             {
@@ -55,7 +67,7 @@ namespace Dancer
                         music.music_name = match.Groups[2].ToString();
                         music.belong_to_list = NextFolder.Name;
                         Match singer_match = Regex.Match(match.Groups[1].ToString(), @"(.*?)(、|&|\s|,)(.*)");
-                        if(singer_match.Success)
+                        if (singer_match.Success)
                         {
                             music.singer = singer_match.Groups[1].ToString();
                             music.other_singer = singer_match.Groups[3].ToString();
@@ -67,12 +79,7 @@ namespace Dancer
                     }
                 }
             }
-            processTimer.Interval = new TimeSpan(1);
-            processTimer.Tick += ProcessTimer_Tick;
-            player.MediaEnded += Player_MediaEnded;
-            playNewSong();
         }
-
         private void Player_MediaEnded(object sender, RoutedEventArgs e)
         {
             //throw new NotImplementedException();
@@ -142,15 +149,15 @@ namespace Dancer
 
         private void btnMenu_Click(object sender, RoutedEventArgs e)
         {
-            /*for (int i = 0; i < 20; i++) for (int j = 0; j < 20; j++)
-                    MysqlConnector.addNewSong("song" + i.ToString(), "singer" + j.ToString(), "listname");
-            */
-            string music_name = "", singer = "";
-            for(int i = 0; i < 20; i++)
+            if (basePanel.Visibility == Visibility.Hidden)
             {
-                MysqlConnector.getCurrentSong(ref music_name, ref singer);
-                MysqlConnector.addListeningRecord(music_name, singer);
-                System.Windows.MessageBox.Show(music_name + " - " + singer);
+                this.Height += basePanel.ActualHeight;
+                basePanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.Height -= basePanel.ActualHeight;
+                basePanel.Visibility = Visibility.Hidden;
             }
         }
         private void changeProcess(double k)

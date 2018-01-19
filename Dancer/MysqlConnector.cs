@@ -10,11 +10,19 @@ namespace Dancer
 {
     static class MysqlConnector
     {
-        private static MySqlConnection connection = new MySqlConnection("Data Source=47.92.75.9;Initial Catalog=dancer;User id=root;password=luoyuan119026;CharSet=utf8;Port=8783");
-        private static MySqlCommand command = new MySqlCommand("", connection);
-        private static MySqlDataAdapter adapter = new MySqlDataAdapter(command);
+        private static MySqlConnection connection;
+        private static MySqlCommand command;
+        private static MySqlDataAdapter adapter;
         public static DataSet dataset = new DataSet();
-
+        public static void init()
+        {
+            string pwd = System.IO.File.ReadAllText(@"mysql.pwd");
+            string conn_mes = "Data Source=47.92.75.9;Initial Catalog=dancer;User id=root;password=fakepwd;CharSet=utf8;Port=8783";
+            conn_mes = conn_mes.Replace("fakepwd", pwd);
+            connection = new MySqlConnection(conn_mes);
+            command = new MySqlCommand("", connection);
+            adapter = new MySqlDataAdapter(command);
+        }
         public static int addNewSong(string music_name, string singer, string belong_to_list, string other_singer = null, string album = null, int publish_year = 0)
         {
             command.Parameters.Clear();

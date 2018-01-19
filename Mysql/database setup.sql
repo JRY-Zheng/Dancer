@@ -48,20 +48,20 @@ delimiter ;
 drop procedure if exists get_current_song;
 delimiter |
 create procedure get_current_song
-(out _music_name varchar(255), out _singer varchar(255))
+(out _music_name varchar(255) character set utf8, out _singer varchar(255)character set utf8)
 begin
 	declare rand double;
 	declare weight_sum double default 0;
     declare i int;
-    select rand = rand();
-    select i = max(music.song_id) from music;
+    select rand() into rand;
+    select max(music.song_id) from music into i;
     outer_label:
     while i > 0 do
 		set weight_sum = weight_sum +
 			(select music.weight from music where music.song_id = i);
 		if weight_sum > rand then
-			select _music_name = music.music_name, _singer = music.singer
-            from music where music.song_id = i;
+			select music.music_name, music.singer
+            from music where music.song_id = i into _music_name, _singer;
             leave outer_label;
 		end if;
 		set i = i - 1;

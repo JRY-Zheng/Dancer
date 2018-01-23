@@ -34,7 +34,6 @@ namespace Dancer
             int publish_year;
         };
         private List<Music> musicPath = new List<Music>();
-        //private int curSong = 37;
         public MainWindow()
         {
             InitializeComponent();
@@ -80,18 +79,77 @@ namespace Dancer
                 }
             }
         }
+        private string cycle_music_name = "", cycle_singer= "";
+        public int checkSong(string song_info)
+        {
+            string music_name, singer;
+            Match match = Regex.Match(song_info, @"^(.+?)(\s(.+))?$");
+            if (match.Success)
+            {
+                music_name = match.Groups[1].ToString();
+                if (match.Groups.Count > 3 && match.Groups[3].ToString()!="")
+                {
+                    singer = match.Groups[3].ToString();
+                    List<Music> find_music_list = musicPath.FindAll(name => { return name.music_name == music_name && name.singer == singer; });
+                    if (find_music_list.ToArray().Length == 0) return -1;
+                    else
+                    {
+                        cycle_music_name = music_name;
+                        cycle_singer = singer;
+                    }
+                }
+                else
+                {
+                    List<Music> find_music_list = musicPath.FindAll(name => { return name.music_name == music_name; });
+                    if (find_music_list.ToArray().Length == 0) return -1;
+                    else
+                    {
+                        cycle_music_name = music_name;
+                        cycle_singer = "";
+                    }
+                }
+            }
+            else
+            {
+                cycle_singer = "";
+                cycle_music_name = "";
+                if (song_info == "") return 1;
+                else return -1;
+            }
+            return 0;
+        }
         private void Player_MediaEnded(object sender, RoutedEventArgs e)
         {
             //throw new NotImplementedException();
             if (direct_close) this.Close();
             player.Stop();
-            playNewSong();
+            if (cycle_music_name == "" && cycle_singer == "") playNewSong();
+            else if (cycle_singer == "") playNewSong(cycle_music_name);
+            else playNewSong(cycle_music_name, cycle_singer);
         }
 
         private void playNewSong()
         {
             string music_name = "", singer = "";
             MysqlConnector.getCurrentSong(ref music_name, ref singer);
+            MysqlConnector.addListeningRecord(music_name, singer);
+            player.Source = new Uri(musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; }).music_path);
+            music_title.Text = singer + " - " + music_name;
+            player.Play();
+            processTimer.Start();
+        }
+        private void playNewSong(string music_name)
+        {
+            Music finded_music = musicPath.Find(name => { return name.music_name == music_name; });
+            string singer = finded_music.singer;
+            MysqlConnector.addListeningRecord(music_name, singer);
+            player.Source = new Uri(finded_music.music_path);
+            music_title.Text = singer + " - " + music_name;
+            player.Play();
+            processTimer.Start();
+        }
+        private void playNewSong(string music_name, string singer)
+        {
             MysqlConnector.addListeningRecord(music_name, singer);
             player.Source = new Uri(musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; }).music_path);
             music_title.Text = singer + " - " + music_name;

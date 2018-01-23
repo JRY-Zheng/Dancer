@@ -31,9 +31,8 @@ namespace Dancer
         {
             if (e.Key==Key.Enter)
             {
-                if (Directory.Exists(input_path.Text))
+                if (father.checkSong(input_path.Text)>=0)
                 {
-                    father.load_music(input_path.Text);
                     change_color(1);
                 }
                 else change_color(-1);
@@ -63,11 +62,27 @@ namespace Dancer
                     break;
             }
         }
+        private bool hasText = false;
+        private void input_path_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (input_path.Text == "")
+            {
+                input_path.Text = "选择一首歌单曲循环";
+                input_path.Foreground = new SolidColorBrush(Colors.LightGray);
+                hasText = false;
+            }
+            else hasText = true;
+        }
+
+        private void input_path_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (!hasText) input_path.Text = "";
+            input_path.Foreground = new SolidColorBrush(Colors.Black);
+        }
 
         private void input_path_TextChanged(object sender, TextChangedEventArgs e)
         {
-            try { change_color(0); }
-            catch { };
+            try {change_color(0); } catch { }
         }
     }
 }

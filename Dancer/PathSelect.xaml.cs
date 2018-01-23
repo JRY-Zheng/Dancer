@@ -31,12 +31,22 @@ namespace Dancer
         {
             if (e.Key==Key.Enter)
             {
-                if (father.checkSong(input_path.Text)>=0)
-                {
-                    change_color(1);
-                }
-                else change_color(-1);
+                search_song();
             }
+            if (e.Key==Key.Tab)
+            {
+                input_path.Text = father.cur_music_name + " " + father.cur_singer;
+                search_song();
+            }
+            father.btnPlay.Focus();
+        }
+        private void search_song()
+        {
+            if (father.checkSong(input_path.Text) >= 0)
+            {
+                change_color(1);
+            }
+            else change_color(-1);
         }
         private void change_color(int state)
         {
@@ -82,6 +92,7 @@ namespace Dancer
 
         private void input_path_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (input_path.Text == "选择一首歌单曲循环") return;
             try {change_color(0); } catch { }
         }
     }

@@ -14,10 +14,11 @@ namespace Dancer
         private static MySqlCommand command;
         private static MySqlDataAdapter adapter;
         public static DataSet dataset = new DataSet();
-        public static void init()
+        public static void init(string MysqlServerIP, string MysqlCatalog, string MysqlUserID, string MysqlPassword, string MysqlPort)
         {
             string pwd = System.IO.File.ReadAllText(@"mysql.pwd");
-            string conn_mes = "Data Source=47.92.75.9;Initial Catalog=dancer;User id=root;password=fakepwd;CharSet=utf8;Port=8783";
+            //string conn_mes = String.Format("Data Source=47.92.75.9;Initial Catalog=dancer;User id=root;password=fakepwd;CharSet=utf8;Port=8783");
+            string conn_mes = String.Format("Data Source={0};Initial Catalog={1};User id={2};password={3};CharSet=utf8;Port={4}", MysqlServerIP, MysqlCatalog, MysqlUserID, MysqlPassword, MysqlPort);
             conn_mes = conn_mes.Replace("fakepwd", pwd);
             connection = new MySqlConnection(conn_mes);
             command = new MySqlCommand("", connection);

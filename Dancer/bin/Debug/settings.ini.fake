@@ -1,0 +1,20 @@
+//这是一份示例，用户名和密码需要填入自己的。
+//如果你信任我，选择用我提供的数据库，请去XX网址注册
+//FTP服务器需要自行搭建噢，如果真的需要请联系我zhengjry@foxmail.com
+//配置数据库
+mysql_server_ip = 47.92.75.9
+mysql_catalog = dancer
+mysql_user_id = your_use_id
+mysql_password = your_password
+mysql_port = 8783
+//配置FTP服务器
+ftp_server_ip = your_server_ip
+ftp_user_id = your_user_id
+ftp_password = your_password
+//配置面板主题
+window_top_color = #FF888888
+window_bottom_color = #FF666666
+play_button_color = default // default意为接受GitHub上展示的默认主题
+music_title_color = default
+//配置音乐存放目录
+music_directory = D:\歌单\ # 若为"\"则是相对路径

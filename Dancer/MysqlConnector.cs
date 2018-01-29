@@ -13,13 +13,13 @@ namespace Dancer
         private static MySqlConnection connection;
         private static MySqlCommand command;
         private static MySqlDataAdapter adapter;
-        public static DataSet dataset = new DataSet();
+        //public static DataSet dataset = new DataSet();
+        private static string user_name;
         public static void init(string MysqlServerIP, string MysqlCatalog, string MysqlUserID, string MysqlPassword, string MysqlPort)
         {
-            string pwd = System.IO.File.ReadAllText(@"mysql.pwd");
             //string conn_mes = String.Format("Data Source=47.92.75.9;Initial Catalog=dancer;User id=root;password=fakepwd;CharSet=utf8;Port=8783");
             string conn_mes = String.Format("Data Source={0};Initial Catalog={1};User id={2};password={3};CharSet=utf8;Port={4}", MysqlServerIP, MysqlCatalog, MysqlUserID, MysqlPassword, MysqlPort);
-            conn_mes = conn_mes.Replace("fakepwd", pwd);
+            user_name = MysqlUserID;
             connection = new MySqlConnection(conn_mes);
             command = new MySqlCommand("", connection);
             adapter = new MySqlDataAdapter(command);
@@ -28,7 +28,7 @@ namespace Dancer
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
-            command.CommandText = "SELECT count(*) FROM music WHERE music_name = '" + music_name + "' AND singer = '" + singer + "'";
+            command.CommandText = "SELECT count(*) FROM music WHERE user_name = '" + user_name + "' AND music_name = '" + music_name + "' AND singer = '" + singer + "'";
             connection.Open();
             object cnt = command.ExecuteScalar();
             connection.Close();
@@ -41,10 +41,10 @@ namespace Dancer
             string album_ = album == null ? "" : decorate(album);
             string publish_year_ = publish_year == 0 ? "" : decorate(publish_year.ToString());
             string otherParamName = _other_singer + _album + _publish_year;
-            string wholeParam = decorate(music_name, false) + decorate(singer) + decorate(belong_to_list) + other_singer_ + album_ + publish_year_;
+            string wholeParam = decorate(user_name,false) + decorate(music_name) + decorate(singer) + decorate(belong_to_list) + other_singer_ + album_ + publish_year_;
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
-            command.CommandText = "INSERT INTO music(music_name, singer, belong_to_list" + otherParamName + ")VALUES(" + wholeParam + ")";
+            command.CommandText = "INSERT INTO music(user_name, music_name, singer, belong_to_list" + otherParamName + ")VALUES(" + wholeParam + ")";
             connection.Open();
             int Return = command.ExecuteNonQuery();
             connection.Close();
@@ -55,14 +55,14 @@ namespace Dancer
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
-            command.CommandText = "SELECT count(*) FROM lists WHERE list_name = '" + list_name + "'";
+            command.CommandText = "SELECT count(*) FROM lists WHERE user_name = '" + user_name + "' AND list_name = '" + list_name + "'";
             connection.Open();
             object cnt = command.ExecuteScalar();
             connection.Close();
             if (Convert.ToInt32(cnt) != 0) return -1;
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
-            command.CommandText = "INSERT INTO lists(list_name)VALUES('" + list_name + "')";
+            command.CommandText = "INSERT INTO lists(list_name, user_name)VALUES(" + decorate(user_name,false) + decorate(list_name) + ")";
             connection.Open();
             int res = command.ExecuteNonQuery();
             connection.Close();
@@ -72,7 +72,7 @@ namespace Dancer
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
-            command.CommandText = "INSERT INTO listening(music_name, singer, where_to_listen)VALUES(" + decorate(music_name,false) + decorate(singer) + decorate("PC") + ")";
+            command.CommandText = "INSERT INTO listening(music_name, singer, where_to_listen, user_name)VALUES(" + decorate(music_name,false) + decorate(singer) + decorate("PC") + decorate(user_name) + ")";
             connection.Open();
             int res = command.ExecuteNonQuery();
             connection.Close();
@@ -85,10 +85,14 @@ namespace Dancer
             command.CommandText = "get_current_song";
             MySqlParameter _music_name = new MySqlParameter("_music_name", MySqlDbType.VarChar);
             MySqlParameter _singer = new MySqlParameter("_singer", MySqlDbType.VarChar);
+            MySqlParameter _user_name = new MySqlParameter("_user_name", MySqlDbType.VarChar);
             _music_name.Direction = ParameterDirection.Output;
             _singer.Direction = ParameterDirection.Output;
+            _user_name.Direction = ParameterDirection.Input;
+            _user_name.Value = user_name;
             command.Parameters.Add(_music_name);
             command.Parameters.Add(_singer);
+            command.Parameters.Add(_user_name);
             connection.Open();
             int res = command.ExecuteNonQuery();
             music_name = _music_name.Value.ToString();

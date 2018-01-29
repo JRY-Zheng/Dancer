@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="Dancer.LyricDisplay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Dancer"
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="400">
+    <Grid>
+        <Border CornerRadius="5" BorderBrush="Gray">
+            <Border.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF636363" Offset="0"/>
+                    <GradientStop Color="#FF4F4F4F" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+        <TextBlock x:Name="cur_lyric" Margin="0,0,0,20" Foreground="White" Text="暂无歌词" TextAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock x:Name="next_lyric" Margin="0,20,0,0" Foreground="Gray" TextAlignment="Center" VerticalAlignment="Center" Text="暂无歌词"/>
+    </Grid>
+</UserControl>

@@ -17,6 +17,7 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
+using log4net;
 
 namespace Dancer
 {
@@ -28,26 +29,38 @@ namespace Dancer
         public string cur_music_name, cur_singer;
         private DispatcherTimer processTimer = new DispatcherTimer();
         private PathSelect pathSelect;
+        private LyricDisplay lyricDisplay;
         private struct Music
         {
-            public 
-            string music_path, music_name, singer, album, belong_to_list, other_singer;
-            int publish_year;
+            public string music_path, music_name, singer, album, belong_to_list, other_singer;
+            public int publish_year;
+        };
+        public struct Lyric
+        {
+            public double position;
+            public string lyric_content;
         };
         private List<Music> musicPath = new List<Music>();
         private Dictionary<string, string> preference = new Dictionary<string, string>();
-
+        private ILog log = log4net.LogManager.GetLogger("Dancer.Logging");//(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
         public MainWindow()
         {
             InitializeComponent();
             load_settings();
+            log.Info("Settings loaded.");
             FtpConnector.init(preference["ftp_server_ip"], preference["ftp_user_id"], preference["ftp_password"]);
+            log.Info("Ftp initialized.");
             MysqlConnector.init(preference["mysql_server_ip"], preference["mysql_catalog"], preference["mysql_user_id"], preference["mysql_password"], preference["mysql_port"]);
+            log.Info("Mysql initialized.");
             load_music();
+            log.Info("Music loaded.");
             set_theme();
             processTimer.Interval = new TimeSpan(1);
             processTimer.Tick += ProcessTimer_Tick;
             player.MediaEnded += Player_MediaEnded;
+            lyricDisplay = new LyricDisplay(this);
+            lyricPanel.Children.Add(lyricDisplay);
             playNewSong();
             pathSelect = new PathSelect(this);
             basePanel.Children.Add(pathSelect);
@@ -204,6 +217,7 @@ namespace Dancer
         private void Player_MediaEnded(object sender, RoutedEventArgs e)
         {
             //throw new NotImplementedException();
+            log.Info("----Current song ended.");
             if (direct_close) this.Close();
             player.Stop();
             if (cycle_music_name == "" && cycle_singer == "") playNewSong();
@@ -215,12 +229,16 @@ namespace Dancer
             string music_name = "", singer = "";
             MysqlConnector.getCurrentSong(ref music_name, ref singer);
             MysqlConnector.addListeningRecord(music_name, singer);
-            player.Source = new Uri(musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; }).music_path);
+            Music finded_music = musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; });
+            player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
+            log.Info(String.Format("Playing song {0} by {1}...", music_name, singer));
             player.Play();
             processTimer.Start();
             cur_music_name = music_name;
             cur_singer = singer;
+            LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+            lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
         }
         private void playNewSong(string music_name)
         {
@@ -229,22 +247,30 @@ namespace Dancer
             MysqlConnector.addListeningRecord(music_name, singer);
             player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
+            log.Info(String.Format("Playing song {0} by {1}...", music_name, singer));
             player.Play();
             processTimer.Start();
             cur_music_name = music_name;
             cur_singer = singer;
+            LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+            lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
         }
         private void playNewSong(string music_name, string singer)
         {
             MysqlConnector.addListeningRecord(music_name, singer);
-            player.Source = new Uri(musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; }).music_path);
+            Music finded_music = musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; });
+            player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
+            log.Info(String.Format("Playing song {0} by {1}...", music_name, singer));
             player.Play();
             processTimer.Start();
             cur_music_name = music_name;
             cur_singer = singer;
+            LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+            lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
         }
         //更新进度条
+        public double playing_process() => player.Position.TotalSeconds;
         private void ProcessTimer_Tick(object sender, EventArgs e)
         {
             //throw new NotImplementedException();
@@ -267,12 +293,14 @@ namespace Dancer
                 player.Pause();
                 btnPlay.Content = " ▷";
                 processTimer.Stop();
+                log.Info("----Music pauses...");
             }
             else
             {
                 player.Play();
                 btnPlay.Content = "∥";
                 processTimer.Start();
+                log.Info("----Music restarted");
             }
             playing = !playing;
         }
@@ -280,6 +308,7 @@ namespace Dancer
         private bool direct_close = false;
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            log.Info(direct_close?"User tries to close the window.":"User double clicks to direct close the window.");
             if (direct_close) this.Close();
             else
             {
@@ -304,11 +333,13 @@ namespace Dancer
             {
                 this.Height += basePanel.ActualHeight;
                 basePanel.Visibility = Visibility.Visible;
+                log.Info("User opens the menu...");
             }
             else
             {
                 this.Height -= basePanel.ActualHeight;
                 basePanel.Visibility = Visibility.Hidden;
+                log.Info("User closes the menu.");
             }
         }
     }

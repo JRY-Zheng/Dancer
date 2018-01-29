@@ -17,3 +17,8 @@ E:\大学\飞行器设计\C#\Dancer\Dancer\bin\Debug\MySql.Data.xml
 E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\PathSelect.g.cs
 E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\Dancer_MarkupCompile.lref
 E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\PathSelect.baml
+E:\大学\飞行器设计\C#\Dancer\Dancer\bin\Debug\log4net.dll
+E:\大学\飞行器设计\C#\Dancer\Dancer\bin\Debug\log4net.xml
+E:\大学\飞行器设计\C#\Dancer\Dancer\bin\Debug\log4net.config
+E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\LyricDisplay.g.cs
+E:\大学\飞行器设计\C#\Dancer\Dancer\obj\Debug\LyricDisplay.baml

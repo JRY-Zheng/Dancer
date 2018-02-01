@@ -8,28 +8,30 @@
 
  namespace Dancer
  {
-    static class FtpConnector
+    class FtpConnector
     {
-        private static FtpWeb ftpWeb;
-        public static void init(string FtpServerIP, string FtpUserID, string FtpPassword)
+        private FtpWeb ftpWeb;
+        private string root_path = "";
+        public void init(string FtpServerIP, string FtpUserID, string FtpPassword, string _root_path = "")
         {
-            ftpWeb = new FtpWeb(FtpServerIP, "", FtpUserID, FtpPassword);
+            root_path = _root_path;
+            ftpWeb = new FtpWeb(FtpServerIP, root_path, FtpUserID, FtpPassword);
         }
-        public static void workList(string music_list)
+        public void workList(string music_list)
         {
-            if (ftpWeb.CurrentDirectory() != music_list)
+            if (ftpWeb.CurrentDirectory() != root_path + "/" + music_list)
             {
-                ftpWeb.GotoDirectory("", false);
+                ftpWeb.GotoDirectory(root_path, false);
                 if (!ftpWeb.DirectoryExist(music_list)) ftpWeb.MakeDir(music_list);
                 ftpWeb.GotoDirectory(music_list, false);
             }
         }
-        public static void uploadFile(string file_path, string music_list)
+        public void uploadFile(string file_path, string music_list)
         {
             workList(music_list);
             ftpWeb.Upload(file_path);
         }
-        public static void downloadFile(string file_path, string music_name, string music_list)
+        public void downloadFile(string file_path, string music_name, string music_list)
         {
             workList(music_list);
             ftpWeb.Download(file_path, music_name, false);

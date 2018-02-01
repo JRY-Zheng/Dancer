@@ -18,6 +18,8 @@ using System.Windows.Forms;
 using System.IO;
 using System.Text.RegularExpressions;
 using log4net;
+using System.Data;
+using System.ComponentModel;
 
 namespace Dancer
 {
@@ -35,38 +37,111 @@ namespace Dancer
             public string music_path, music_name, singer, album, belong_to_list, other_singer;
             public int publish_year;
         };
+        private struct SimMusic
+        {
+            public string music_name, singer;
+            public SimMusic(string _music_name, string _singer)
+            {
+                music_name = _music_name;
+                singer = _singer;
+            }
+        };
         public struct Lyric
         {
             public double position;
             public string lyric_content;
         };
+        private List<SimMusic> to_upload_music;
+        private List<SimMusic> to_download_music;
         private List<Music> musicPath = new List<Music>();
+        private List<Music> to_upload_music_list = new List<Music>();
         private Dictionary<string, string> preference = new Dictionary<string, string>();
-        private ILog log = log4net.LogManager.GetLogger("Dancer.Logging");//(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        
+        private ILog log = log4net.LogManager.GetLogger("Dancer.Logging");
+        private BackgroundWorker fill_music_to_mysql = new BackgroundWorker();
+        private MysqlConnector mysqlConnector = new MysqlConnector();
+        private FtpConnector ftpConnector = new FtpConnector();
+
         public MainWindow()
         {
             InitializeComponent();
             load_settings();
             log.Info("Settings loaded.");
-            FtpConnector.init(preference["ftp_server_ip"], preference["ftp_user_id"], preference["ftp_password"]);
+            init_ftp(ref ftpConnector);
             log.Info("Ftp initialized.");
-            MysqlConnector.init(preference["mysql_server_ip"], preference["mysql_catalog"], preference["mysql_user_id"], preference["mysql_password"], preference["mysql_port"]);
+            init_mysql(ref mysqlConnector);
             log.Info("Mysql initialized.");
-            load_music();
+            fill_music_to_mysql.DoWork += Fill_music_to_mysql_DoWork;
+            fill_music_to_mysql.RunWorkerCompleted += Fill_music_to_mysql_RunWorkerCompleted;
+            load_music(preference["music_directory"]);
             log.Info("Music loaded.");
             set_theme();
             processTimer.Interval = new TimeSpan(1);
             processTimer.Tick += ProcessTimer_Tick;
             player.MediaEnded += Player_MediaEnded;
-            lyricDisplay = new LyricDisplay(this);
-            lyricPanel.Children.Add(lyricDisplay);
+            if (preference["display_lyric"] == "true")
+            {
+                lyricDisplay = new LyricDisplay(this);
+                lyricPanel.Children.Add(lyricDisplay);
+            }
+            if (preference["top_most"] == "true") this.Topmost = true;
             playNewSong();
             pathSelect = new PathSelect(this);
             basePanel.Children.Add(pathSelect);
         }
+
+        private void Fill_music_to_mysql_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            //throw new NotImplementedException();
+            log.Info("Song list updated.");
+        }
+
+        private void Fill_music_to_mysql_DoWork(object sender, DoWorkEventArgs e)
+        {
+            //throw new NotImplementedException();
+            foreach (SimMusic simMusic in to_upload_music)
+            {
+                to_upload_music_list.Add(musicPath.Find(m => { return m.music_name == simMusic.music_name && m.singer == simMusic.singer; }));
+            }
+            List<BackgroundWorker> upload_music = new List<BackgroundWorker>();
+            for (int i = 0; i < 4; i++) upload_music.Add(new BackgroundWorker());
+            upload_music.ForEach(um => { um.DoWork += Um_DoWork; });
+            upload_music.ForEach(um => { um.RunWorkerCompleted += Um_RunWorkerCompleted; });
+            upload_music.ForEach(um => { um.RunWorkerAsync(); });
+            upload_music.ForEach(um => { while (um.IsBusy) ; });
+        }
+
+        private void Um_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            //throw new NotImplementedException();
+            if (to_upload_music_list.Count != 0) (sender as BackgroundWorker).RunWorkerAsync();
+        }
+
+        private void Um_DoWork(object sender, DoWorkEventArgs e)
+        {
+            //throw new NotImplementedException();
+            MysqlConnector music_updator = new MysqlConnector();
+            init_mysql(ref music_updator);
+            FtpConnector music_uploader = new FtpConnector();
+            init_ftp(ref music_uploader);
+            Music music;
+            lock (to_upload_music_list)
+            {
+                music = to_upload_music_list[0];
+                to_upload_music_list.Remove(music);
+            }
+            int res = music.other_singer == null ? music_updator.addNewSong(music.music_name, music.singer, music.belong_to_list) : music_updator.addNewSong(music.music_name, music.singer, music.belong_to_list, music.other_singer);
+            //music_uploader.uploadFile(music.music_path, music.belong_to_list);
+        }
+        private void init_mysql(ref MysqlConnector m)
+        {
+            m.init(preference["mysql_server_ip"], preference["mysql_catalog"], preference["mysql_user_id"], preference["mysql_password"], preference["mysql_port"]);
+        }
+        private void init_ftp(ref FtpConnector f)
+        {
+            f.init(preference["ftp_server_ip"], preference["ftp_user_id"], preference["ftp_password"]);
+        }
         //加载设置
-        string[] setting_options = { "mysql_server_ip", "mysql_catalog", "mysql_user_id", "mysql_password", "mysql_port", "ftp_server_ip", "ftp_user_id", "ftp_password", "window_top_color", "window_bottom_color", "play_button_color", "music_title_color", "music_directory"};
+        string[] setting_options = { "mysql_server_ip", "mysql_catalog", "mysql_user_id", "mysql_password", "mysql_port", "ftp_server_ip", "ftp_user_id", "ftp_password", "window_top_color", "window_bottom_color", "play_button_color", "music_title_color", "music_directory", "display_lyric", "display_figure", "top_most"};
         private void load_settings()
         {
             string[] settings = File.ReadAllLines("settings.ini");
@@ -140,18 +215,17 @@ namespace Dancer
             }
         }
         //加载音乐
-        private void load_music(string music_path = @"E:\音乐\歌单\")
+        private void load_music(string music_path)
         {
             musicPath.Clear();
             DirectoryInfo TheFolder = new DirectoryInfo(music_path);
             DirectoryInfo[] dirInfo = TheFolder.GetDirectories();
             foreach (DirectoryInfo NextFolder in dirInfo)
             {
-                MysqlConnector.addNewList(NextFolder.Name);
+                mysqlConnector.addNewList(NextFolder.Name);
                 FileInfo[] fileInfo = NextFolder.GetFiles();
                 foreach (FileInfo NextFile in fileInfo)
                 {
-                    //NextFile.FullName.Substring(NextFile.FullName.Length - 4) == ".mp3"
                     Match match = Regex.Match(NextFile.FullName, @".*\\(.*?)\s-\s(.*)\.mp3");
                     if (match.Success)
                     {
@@ -167,11 +241,18 @@ namespace Dancer
                         }
                         else music.singer = match.Groups[1].ToString();
                         musicPath.Add(music);
-                        /*
-                        int res = music.other_singer==null? MysqlConnector.addNewSong(music.music_name, music.singer, music.belong_to_list): MysqlConnector.addNewSong(music.music_name, music.singer, music.belong_to_list, music.other_singer);*/
                     }
                 }
             }
+            mysqlConnector.getSongList();
+            List<SimMusic> exist_music_list = new List<SimMusic>();
+            foreach (DataRow dr in mysqlConnector.dataset.Tables["all_songs"].Rows) exist_music_list.Add(new SimMusic(dr[0].ToString(), dr[1].ToString()));
+            List<SimMusic> cur_music_list = new List<SimMusic>();
+            musicPath.ForEach(m => { cur_music_list.Add(new SimMusic(m.music_name, m.singer)); });
+            List<SimMusic> except_music = cur_music_list.Except(exist_music_list).ToList();
+            to_upload_music = except_music.Except(exist_music_list).ToList();
+            to_download_music = except_music.Except(cur_music_list).ToList();
+            if (to_upload_music.Count > 0) fill_music_to_mysql.RunWorkerAsync();
         }
         //单曲循环
         private string cycle_music_name = "", cycle_singer= "";
@@ -227,8 +308,8 @@ namespace Dancer
         private void playNewSong()
         {
             string music_name = "", singer = "";
-            MysqlConnector.getCurrentSong(ref music_name, ref singer);
-            MysqlConnector.addListeningRecord(music_name, singer);
+            mysqlConnector.getCurrentSong(ref music_name, ref singer);
+            mysqlConnector.addListeningRecord(music_name, singer);
             Music finded_music = musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; });
             player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
@@ -237,14 +318,17 @@ namespace Dancer
             processTimer.Start();
             cur_music_name = music_name;
             cur_singer = singer;
-            LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
-            lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
+            if (preference["display_lyric"] == "true")
+            {
+                LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+                lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
+            }
         }
         private void playNewSong(string music_name)
         {
             Music finded_music = musicPath.Find(name => { return name.music_name == music_name; });
             string singer = finded_music.singer;
-            MysqlConnector.addListeningRecord(music_name, singer);
+            mysqlConnector.addListeningRecord(music_name, singer);
             player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
             log.Info(String.Format("Playing song {0} by {1}...", music_name, singer));
@@ -252,12 +336,15 @@ namespace Dancer
             processTimer.Start();
             cur_music_name = music_name;
             cur_singer = singer;
-            LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
-            lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
+            if (preference["display_lyric"] == "true")
+            {
+                LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+                lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
+            }
         }
         private void playNewSong(string music_name, string singer)
         {
-            MysqlConnector.addListeningRecord(music_name, singer);
+            mysqlConnector.addListeningRecord(music_name, singer);
             Music finded_music = musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; });
             player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
@@ -266,8 +353,11 @@ namespace Dancer
             processTimer.Start();
             cur_music_name = music_name;
             cur_singer = singer;
-            LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
-            lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
+            if (preference["display_lyric"] == "true")
+            {
+                LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+                lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
+            }
         }
         //更新进度条
         public double playing_process() => player.Position.TotalSeconds;

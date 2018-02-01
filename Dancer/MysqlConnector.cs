@@ -8,14 +8,14 @@ using System.Data;
 
 namespace Dancer
 {
-    static class MysqlConnector
+    class MysqlConnector
     {
-        private static MySqlConnection connection;
-        private static MySqlCommand command;
-        private static MySqlDataAdapter adapter;
-        //public static DataSet dataset = new DataSet();
-        private static string user_name;
-        public static void init(string MysqlServerIP, string MysqlCatalog, string MysqlUserID, string MysqlPassword, string MysqlPort)
+        private MySqlConnection connection;
+        private MySqlCommand command;
+        private MySqlDataAdapter adapter;
+        public DataSet dataset = new DataSet();
+        private string user_name;
+        public void init(string MysqlServerIP, string MysqlCatalog, string MysqlUserID, string MysqlPassword, string MysqlPort)
         {
             //string conn_mes = String.Format("Data Source=47.92.75.9;Initial Catalog=dancer;User id=root;password=fakepwd;CharSet=utf8;Port=8783");
             string conn_mes = String.Format("Data Source={0};Initial Catalog={1};User id={2};password={3};CharSet=utf8;Port={4}", MysqlServerIP, MysqlCatalog, MysqlUserID, MysqlPassword, MysqlPort);
@@ -24,7 +24,7 @@ namespace Dancer
             command = new MySqlCommand("", connection);
             adapter = new MySqlDataAdapter(command);
         }
-        public static int addNewSong(string music_name, string singer, string belong_to_list, string other_singer = null, string album = null, int publish_year = 0)
+        public int addNewSong(string music_name, string singer, string belong_to_list, string other_singer = null, string album = null, int publish_year = 0)
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
@@ -50,8 +50,18 @@ namespace Dancer
             connection.Close();
             return Return;
         }
-
-        public static int addNewList(string list_name)
+        public int getSongList()
+        {
+            if (dataset.Tables.Contains("all_songs")) dataset.Tables["all_songs"].Clear();
+            command.Parameters.Clear();
+            command.CommandType = CommandType.Text;
+            command.CommandText = "SELECT music_name, singer FROM music WHERE user_name = '" + user_name + "'";
+            connection.Open();
+            int Return = adapter.Fill(dataset, "all_songs");
+            connection.Close();
+            return Return;
+        }
+        public int addNewList(string list_name)
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
@@ -68,7 +78,7 @@ namespace Dancer
             connection.Close();
             return res;
         }
-        public static int addListeningRecord(string music_name, string singer)
+        public int addListeningRecord(string music_name, string singer)
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
@@ -78,7 +88,7 @@ namespace Dancer
             connection.Close();
             return res;
         }
-        public static int getCurrentSong(ref string music_name, ref string singer)
+        public int getCurrentSong(ref string music_name, ref string singer)
         {
             command.Parameters.Clear();
             command.CommandType = CommandType.StoredProcedure;
@@ -100,6 +110,6 @@ namespace Dancer
             connection.Close();
             return res;
         }
-        private static string decorate(string _item, bool comma = true) => (comma ? "," : "") + "'" + _item + "'";
+        private string decorate(string _item, bool comma = true) => (comma ? "," : "") + "'" + _item + "'";
     }
 }

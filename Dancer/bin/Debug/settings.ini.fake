@@ -18,3 +18,7 @@ play_button_color = default // default意为接受GitHub上展示的默认主题
 music_title_color = default
 //配置音乐存放目录
 music_directory = D:\歌单\ # 若为"\"则是相对路径
+//配置界面组件
+display_lyric = true
+display_figure = true
+top_most = true

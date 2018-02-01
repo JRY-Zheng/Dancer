@@ -48,7 +48,7 @@ namespace Dancer
             if (father.playing_process() > lyric[cur_line].position)
             {
                 cur_lyric.Text = next_lyric.Text;
-                if (lyric.Count > cur_line)
+                if (lyric.Count > cur_line + 1)
                     next_lyric.Text = lyric[++cur_line].lyric_content;
                 else
                 {

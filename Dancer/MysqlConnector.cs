@@ -72,7 +72,7 @@ namespace Dancer
             if (Convert.ToInt32(cnt) != 0) return -1;
             command.Parameters.Clear();
             command.CommandType = CommandType.Text;
-            command.CommandText = "INSERT INTO lists(list_name, user_name)VALUES(" + decorate(user_name,false) + decorate(list_name) + ")";
+            command.CommandText = "INSERT INTO lists(user_name, list_name)VALUES(" + decorate(user_name,false) + decorate(list_name) + ")";
             connection.Open();
             int res = command.ExecuteNonQuery();
             connection.Close();

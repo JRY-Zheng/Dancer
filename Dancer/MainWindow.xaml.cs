@@ -66,8 +66,8 @@ namespace Dancer
             InitializeComponent();
             load_settings();
             log.Info("Settings loaded.");
-            init_ftp(ref ftpConnector);
-            log.Info("Ftp initialized.");
+            //init_ftp(ref ftpConnector);
+            //log.Info("Ftp initialized.");
             init_mysql(ref mysqlConnector);
             log.Info("Mysql initialized.");
             fill_music_to_mysql.DoWork += Fill_music_to_mysql_DoWork;
@@ -144,6 +144,11 @@ namespace Dancer
         string[] setting_options = { "mysql_server_ip", "mysql_catalog", "mysql_user_id", "mysql_password", "mysql_port", "ftp_server_ip", "ftp_user_id", "ftp_password", "window_top_color", "window_bottom_color", "play_button_color", "music_title_color", "music_directory", "display_lyric", "display_figure", "top_most"};
         private void load_settings()
         {
+            if (!File.Exists("settings.ini"))
+            {
+                System.Windows.MessageBox.Show("配置文件缺失！");
+                this.Close();
+            }
             string[] settings = File.ReadAllLines("settings.ini");
             foreach(string setting in settings)
             {
@@ -164,10 +169,14 @@ namespace Dancer
         //设置主题
         private void set_theme()
         {
-            set_color(preference["window_top_color"], ref windowTopColor);
-            set_color(preference["window_bottom_color"], ref windowBottomColor);
-            set_color(preference["play_button_color"], ref btnPlay);
-            set_color(preference["music_title_color"], ref music_title);
+            try
+            {
+                set_color(preference["window_top_color"], ref windowTopColor);
+                set_color(preference["window_bottom_color"], ref windowBottomColor);
+                set_color(preference["play_button_color"], ref btnPlay);
+                set_color(preference["music_title_color"], ref music_title);
+            }
+            catch { }
         }
         private void set_color(string color_string, ref GradientStop gradientStop)
         {
@@ -217,9 +226,19 @@ namespace Dancer
         //加载音乐
         private void load_music(string music_path)
         {
+            if (!Directory.Exists(music_path))
+            {
+                System.Windows.MessageBox.Show("歌曲路径不存在！");
+                this.Close();
+            }
             musicPath.Clear();
             DirectoryInfo TheFolder = new DirectoryInfo(music_path);
             DirectoryInfo[] dirInfo = TheFolder.GetDirectories();
+            if (dirInfo.Length == 0)
+            {
+                System.Windows.MessageBox.Show("歌单不存在！");
+                this.Close();
+            }
             foreach (DirectoryInfo NextFolder in dirInfo)
             {
                 mysqlConnector.addNewList(NextFolder.Name);

@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Dancer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Width="400" WindowStyle="None" MouseDown="Window_MouseDown" Background="{x:Null}" AllowsTransparency="True" Height="140">
+        Title="Dancer" Width="400" WindowStyle="None" MouseDown="Window_MouseDown" Background="{x:Null}" AllowsTransparency="True" Height="140">
     <Grid x:Name="grid">
         <Border x:Name="pink_border" BorderThickness="1" BorderBrush="Gray"  CornerRadius="5, 5, 5, 5" MaxHeight="90" VerticalAlignment="Top">
             <Border.Background>

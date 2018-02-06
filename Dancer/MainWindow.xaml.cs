@@ -34,7 +34,7 @@ namespace Dancer
         private LyricDisplay lyricDisplay;
         private struct Music
         {
-            public string music_path, music_name, singer, album, belong_to_list, other_singer;
+            public string music_path, music_name, file_name, singer, album, belong_to_list, other_singer;
             public int publish_year;
         };
         private struct SimMusic
@@ -245,21 +245,34 @@ namespace Dancer
                 FileInfo[] fileInfo = NextFolder.GetFiles();
                 foreach (FileInfo NextFile in fileInfo)
                 {
-                    Match match = Regex.Match(NextFile.FullName, @".*\\(.*?)\s-\s(.*)\.mp3");
-                    if (match.Success)
+                    Match match_nc = Regex.Match(NextFile.FullName, @".*\\(.*?)\s-\s(.*)\.mp3");
+                    Match match_xm = Regex.Match(NextFile.FullName, @".*\\(.*?)_(.*)\.mp3");
+                    if (match_nc.Success || match_xm.Success)
                     {
+                        if (match_xm.Success)
+                            ;
+                        Match match = match_nc.Success ? match_nc : match_xm;
+                        int nc_or_xm = match_nc.Success ? 2 : 1;
                         Music music = new Music();
                         music.music_path = NextFile.FullName;
-                        music.music_name = match.Groups[2].ToString();
+                        music.music_name = match.Groups[nc_or_xm].ToString();
+                        music.file_name = System.IO.Path.GetFileNameWithoutExtension(NextFile.Name);
                         music.belong_to_list = NextFolder.Name;
-                        Match singer_match = Regex.Match(match.Groups[1].ToString(), @"(.*?)(、|&|\s|,)(.*)");
+                        Match singer_match = Regex.Match(match.Groups[3-nc_or_xm].ToString(), @"(.*?)(、|&|\s|,)(.*)");
                         if (singer_match.Success)
                         {
                             music.singer = singer_match.Groups[1].ToString();
                             music.other_singer = singer_match.Groups[3].ToString();
                         }
-                        else music.singer = match.Groups[1].ToString();
+                        else music.singer = match.Groups[3-nc_or_xm].ToString();
                         musicPath.Add(music);
+                        //处理爬虫歌词命名不规范问题。
+                        string lrc_music_name = System.IO.Path.Combine(NextFolder.FullName, music.music_name + ".lrc");
+                        string lrc_full_name = System.IO.Path.Combine(NextFolder.FullName, music.file_name + ".lrc");
+                        if (File.Exists(lrc_music_name) && !File.Exists(lrc_full_name))
+                        {
+                            File.Move(lrc_music_name, lrc_full_name);
+                        }
                     }
                 }
             }
@@ -318,7 +331,11 @@ namespace Dancer
         {
             //throw new NotImplementedException();
             log.Info("----Current song ended.");
-            if (direct_close) this.Close();
+            if (direct_close)
+            {
+                this.Close();
+                return;
+            }
             player.Stop();
             if (cycle_music_name == "" && cycle_singer == "") playNewSong();
             else if (cycle_singer == "") playNewSong(cycle_music_name);
@@ -339,7 +356,7 @@ namespace Dancer
             cur_singer = singer;
             if (preference["display_lyric"] == "true")
             {
-                LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+                LyricReader.init(finded_music.file_name, finded_music.belong_to_list, preference["music_directory"]);
                 lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
             }
         }
@@ -357,7 +374,7 @@ namespace Dancer
             cur_singer = singer;
             if (preference["display_lyric"] == "true")
             {
-                LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+                LyricReader.init(finded_music.file_name, finded_music.belong_to_list, preference["music_directory"]);
                 lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
             }
         }
@@ -374,7 +391,7 @@ namespace Dancer
             cur_singer = singer;
             if (preference["display_lyric"] == "true")
             {
-                LyricReader.init(music_name, singer, finded_music.belong_to_list, preference["music_directory"]);
+                LyricReader.init(finded_music.file_name, finded_music.belong_to_list, preference["music_directory"]);
                 lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
             }
         }

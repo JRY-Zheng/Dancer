@@ -4,7 +4,7 @@
 //配置数据库
 mysql_server_ip = 47.92.75.9
 mysql_catalog = dancer
-mysql_user_id = your_use_id
+mysql_user_id = your_user_id
 mysql_password = your_password
 mysql_port = 8783
 //配置FTP服务器

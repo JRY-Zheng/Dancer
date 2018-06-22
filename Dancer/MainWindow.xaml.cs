@@ -229,6 +229,7 @@ namespace Dancer
             if (!Directory.Exists(music_path))
             {
                 System.Windows.MessageBox.Show("歌曲路径不存在！");
+                log.Error("Music path does not exist.");
                 this.Close();
             }
             musicPath.Clear();
@@ -249,8 +250,6 @@ namespace Dancer
                     Match match_xm = Regex.Match(NextFile.FullName, @".*\\(.*?)_(.*)\.mp3");
                     if (match_nc.Success || match_xm.Success)
                     {
-                        if (match_xm.Success)
-                            ;
                         Match match = match_nc.Success ? match_nc : match_xm;
                         int nc_or_xm = match_nc.Success ? 2 : 1;
                         Music music = new Music();
@@ -290,40 +289,67 @@ namespace Dancer
         private string cycle_music_name = "", cycle_singer= "";
         public int checkSong(string song_info)
         {
-            string music_name, singer;
-            Match match = Regex.Match(song_info, @"^(.+?)(\s(.+))?$");
+            string param1, param2;
+            bool exist = false;
+            Match match = Regex.Match(song_info, @"(\S+)\s?(\S*)");
             if (match.Success)
             {
-                music_name = match.Groups[1].ToString();
-                if (match.Groups.Count > 3 && match.Groups[3].ToString()!="")
+                param1 = match.Groups[1].ToString();
+                param2 = match.Groups[2].ToString();
+                mysqlConnector.ifExist(ref exist, param1, param2);
+                if (exist)
                 {
-                    singer = match.Groups[3].ToString();
-                    List<Music> find_music_list = musicPath.FindAll(name => { return name.music_name == music_name && name.singer == singer; });
-                    if (find_music_list.ToArray().Length == 0) return -1;
-                    else
-                    {
-                        cycle_music_name = music_name;
-                        cycle_singer = singer;
-                    }
+                    cycle_music_name = param1;
+                    cycle_singer = param2;
+                    return 0;
                 }
-                else
-                {
-                    List<Music> find_music_list = musicPath.FindAll(name => { return name.music_name == music_name; });
-                    if (find_music_list.ToArray().Length == 0) return -1;
-                    else
-                    {
-                        cycle_music_name = music_name;
-                        cycle_singer = "";
-                    }
+                else {
+                    cycle_music_name = "";
+                    cycle_singer = "";
+                    return -1;
                 }
             }
             else
             {
-                cycle_singer = "";
                 cycle_music_name = "";
-                if (song_info == "") return 1;
-                else return -1;
-            }
+                cycle_singer = "";
+                return 1;
+            };
+
+            //string music_name, singer;
+            //Match match = Regex.Match(song_info, @"^(.+?)(\s(.+))?$");
+            //if (match.Success)
+            //{
+            //    music_name = match.Groups[1].ToString();
+            //    if (match.Groups.Count > 3 && match.Groups[3].ToString()!="")
+            //    {
+            //        singer = match.Groups[3].ToString();
+            //        List<Music> find_music_list = musicPath.FindAll(name => { return name.music_name == music_name && name.singer == singer; });
+            //        if (find_music_list.ToArray().Length == 0) return -1;
+            //        else
+            //        {
+            //            cycle_music_name = music_name;
+            //            cycle_singer = singer;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        List<Music> find_music_list = musicPath.FindAll(name => { return name.music_name == music_name; });
+            //        if (find_music_list.ToArray().Length == 0) return -1;
+            //        else
+            //        {
+            //            cycle_music_name = music_name;
+            //            cycle_singer = "";
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    cycle_singer = "";
+            //    cycle_music_name = "";
+            //    if (song_info == "") return 1;
+            //    else return -1;
+            //}
             return 0;
         }
         //自动播放下一曲
@@ -360,10 +386,11 @@ namespace Dancer
                 lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
             }
         }
-        private void playNewSong(string music_name)
+        private void playNewSong(string param1)
         {
-            Music finded_music = musicPath.Find(name => { return name.music_name == music_name; });
-            string singer = finded_music.singer;
+            string music_name = "", singer = "";
+            mysqlConnector.getCurrentSongs(ref music_name, ref singer, param1, "");
+            Music finded_music = musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; });
             mysqlConnector.addListeningRecord(music_name, singer);
             player.Source = new Uri(finded_music.music_path);
             music_title.Text = singer + " - " + music_name;
@@ -378,8 +405,10 @@ namespace Dancer
                 lyricDisplay.init(music_title.Text, LyricReader.load_lyric());
             }
         }
-        private void playNewSong(string music_name, string singer)
+        private void playNewSong(string param1, string param2)
         {
+            string music_name = "", singer = "";
+            mysqlConnector.getCurrentSongs(ref music_name, ref singer, param1, param2);
             mysqlConnector.addListeningRecord(music_name, singer);
             Music finded_music = musicPath.Find(name => { return name.music_name == music_name && name.singer == singer; });
             player.Source = new Uri(finded_music.music_path);

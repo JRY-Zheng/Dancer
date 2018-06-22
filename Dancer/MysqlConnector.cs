@@ -110,6 +110,62 @@ namespace Dancer
             connection.Close();
             return res;
         }
+        public int getCurrentSongs(ref string music_name, ref string singer, string param1, string param2)
+        {
+            command.Parameters.Clear();
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "get_current_songs";
+            MySqlParameter _music_name = new MySqlParameter("_music_name", MySqlDbType.VarChar);
+            MySqlParameter _singer = new MySqlParameter("_singer", MySqlDbType.VarChar);
+            MySqlParameter _user_name = new MySqlParameter("_user_name", MySqlDbType.VarChar);
+            MySqlParameter _param1 = new MySqlParameter("_param1", MySqlDbType.VarChar);
+            MySqlParameter _param2 = new MySqlParameter("_param2", MySqlDbType.VarChar);
+            _music_name.Direction = ParameterDirection.Output;
+            _singer.Direction = ParameterDirection.Output;
+            _user_name.Direction = ParameterDirection.Input;
+            _user_name.Value = user_name;
+            _param1.Direction = ParameterDirection.Input;
+            _param1.Value = param1;
+            _param2.Direction = ParameterDirection.Input;
+            _param2.Value = param2;
+            command.Parameters.Add(_music_name);
+            command.Parameters.Add(_singer);
+            command.Parameters.Add(_user_name);
+            command.Parameters.Add(_param1);
+            command.Parameters.Add(_param2);
+            connection.Open();
+            int res = command.ExecuteNonQuery();
+            music_name = _music_name.Value.ToString();
+            singer = _singer.Value.ToString();
+            connection.Close();
+            return res;
+        }
+        public int ifExist(ref bool exist, string param1, string param2)
+        {
+            command.Parameters.Clear();
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "if_exist";
+            MySqlParameter _exist = new MySqlParameter("_exist", MySqlDbType.Int16);
+            MySqlParameter _user_name = new MySqlParameter("_user_name", MySqlDbType.VarChar);
+            MySqlParameter _param1 = new MySqlParameter("_param1", MySqlDbType.VarChar);
+            MySqlParameter _param2 = new MySqlParameter("_param2", MySqlDbType.VarChar);
+            _exist.Direction = ParameterDirection.Output;
+            _user_name.Direction = ParameterDirection.Input;
+            _user_name.Value = user_name;
+            _param1.Direction = ParameterDirection.Input;
+            _param1.Value = param1;
+            _param2.Direction = ParameterDirection.Input;
+            _param2.Value = param2;
+            command.Parameters.Add(_exist);
+            command.Parameters.Add(_user_name);
+            command.Parameters.Add(_param1);
+            command.Parameters.Add(_param2);
+            connection.Open();
+            int res = command.ExecuteNonQuery();
+            exist = Convert.ToInt16( _exist.Value.ToString())>0;
+            connection.Close();
+            return res;
+        }
         private string decorate(string _item, bool comma = true) => (comma ? "," : "") + "'" + _item + "'";
     }
 }

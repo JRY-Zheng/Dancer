@@ -16,7 +16,7 @@
             </Border.Background>
         </Border>
         <WrapPanel>
-            <TextBox x:Name="input_path" Text="选择一首歌单曲循环..." Margin="12" Width="340" HorizontalAlignment="Left" BorderBrush="Gray" Height="36" KeyDown="TextBox_KeyDown" VerticalContentAlignment="Center" FontSize="16" LostFocus="input_path_LostFocus" GotFocus="input_path_GotFocus" Foreground="LightGray" TextChanged="input_path_TextChanged">
+            <TextBox x:Name="input_path" Text="模糊搜索" Margin="12" Width="340" HorizontalAlignment="Left" BorderBrush="Gray" Height="36" KeyDown="TextBox_KeyDown" VerticalContentAlignment="Center" FontSize="16" LostFocus="input_path_LostFocus" GotFocus="input_path_GotFocus" Foreground="LightGray" TextChanged="input_path_TextChanged">
                 <TextBox.Template>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" CornerRadius="8,8,8,8" x:Name="PART_Background" Margin="0,0,0,0" Height="36">

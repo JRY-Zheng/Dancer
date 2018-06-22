@@ -77,7 +77,7 @@ namespace Dancer
         {
             if (input_path.Text == "")
             {
-                input_path.Text = "选择一首歌单曲循环";
+                input_path.Text = "模糊搜索";
                 input_path.Foreground = new SolidColorBrush(Colors.LightGray);
                 hasText = false;
             }
@@ -92,7 +92,7 @@ namespace Dancer
 
         private void input_path_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (input_path.Text == "选择一首歌单曲循环") return;
+            if (input_path.Text == "模糊搜索") return;
             try {change_color(0); } catch { }
         }
     }
